@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+
+{% block title %}{{ resource.title }} - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{{ resource.title }}</h4>
+                    {% if resource.description %}
+                    <p class="mb-0">{{ resource.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    {% if resource.resource_type == 'pdf' %}
+                    <div class="embed-responsive embed-responsive-16by9">
+                        <iframe class="embed-responsive-item" 
+                                src="{{ resource.file_path }}"
+                                width="100%" 
+                                height="600px" 
+                                frameborder="0" 
+                                allowfullscreen>
+                        </iframe>
+                    </div>
+                    {% else %}
+                    <div class="ratio ratio-16x9">
+                        <video controls>
+                            <source src="{{ resource.file_path }}" type="video/mp4">
+                            Your browser does not support the video tag.
+                        </video>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card shadow mb-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Resource Information</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-book"></i> Course: {{ course.title }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-file-alt"></i> Type: {{ resource.resource_type|upper }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-eye"></i> Views: {{ resource.views|length }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-clock"></i> Last viewed: 
+                            {% if resource.views %}
+                            {{ resource.views[-1].viewed_at.strftime('%Y-%m-%d %H:%M') }}
+                            {% else %}
+                            Never
+                            {% endif %}
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="card shadow">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">Course Navigation</h5>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{{ url_for('course_detail', course_id=course.id) }}" 
+                           class="list-group-item list-group-item-action">
+                            <i class="fas fa-home"></i> Course Home
+                        </a>
+                        {% if current_user.is_admin %}
+                        <a href="{{ url_for('upload_resource', course_id=course.id) }}" 
+                           class="list-group-item list-group-item-action">
+                            <i class="fas fa-upload"></i> Upload New Resource
+                        </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

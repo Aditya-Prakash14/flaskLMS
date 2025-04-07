@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% block title %}Available Courses{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Available Courses</h2>
+                <p class="card-text">Browse and enroll in our comprehensive learning courses.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-3">
+                        <label for="category" class="form-label">Category</label>
+                        <select class="form-select" id="category" name="category">
+                            <option value="">All Categories</option>
+                            {% for category in categories %}
+                            <option value="{{ category.id }}" {% if request.args.get('category')|int == category.id %}selected{% endif %}>
+                                {{ category.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="difficulty" class="form-label">Difficulty</label>
+                        <select class="form-select" id="difficulty" name="difficulty">
+                            <option value="">All Levels</option>
+                            <option value="Beginner" {% if request.args.get('difficulty') == 'Beginner' %}selected{% endif %}>Beginner</option>
+                            <option value="Intermediate" {% if request.args.get('difficulty') == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                            <option value="Advanced" {% if request.args.get('difficulty') == 'Advanced' %}selected{% endif %}>Advanced</option>
+                            <option value="Expert" {% if request.args.get('difficulty') == 'Expert' %}selected{% endif %}>Expert</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="sort" class="form-label">Sort By</label>
+                        <select class="form-select" id="sort" name="sort">
+                            <option value="newest" {% if request.args.get('sort') == 'newest' %}selected{% endif %}>Newest First</option>
+                            <option value="rating" {% if request.args.get('sort') == 'rating' %}selected{% endif %}>Highest Rated</option>
+                            <option value="popular" {% if request.args.get('sort') == 'popular' %}selected{% endif %}>Most Popular</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary w-100">Apply Filters</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Course Grid -->
+<div class="row">
+    {% for course in courses %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+            <div class="card-body">
+                <h5 class="card-title">{{ course.title }}</h5>
+                <div class="mb-2">
+                    <span class="badge bg-primary">{{ course.category.name if course.category else 'Uncategorized' }}</span>
+                    <span class="badge bg-secondary">{{ course.difficulty_level }}</span>
+                    {% for tag in course.tags %}
+                    <span class="badge bg-info">{{ tag.name }}</span>
+                    {% endfor %}
+                </div>
+                <p class="card-text">{{ course.description[:150] }}{% if course.description|length > 150 %}...{% endif %}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <span class="text-warning">
+                            {% for _ in range(course.average_rating|int) %}
+                            <i class="fas fa-star"></i>
+                            {% endfor %}
+                            {% for _ in range(5 - course.average_rating|int) %}
+                            <i class="far fa-star"></i>
+                            {% endfor %}
+                        </span>
+                        <small class="text-muted ms-1">({{ course.reviews|length }})</small>
+                    </div>
+                    <span class="text-muted">
+                        <i class="fas fa-clock"></i> {{ course.estimated_duration }}h
+                    </span>
+                </div>
+            </div>
+            <div class="card-footer bg-transparent">
+                {% if current_user.is_authenticated %}
+                    {% if current_user.enrollments|selectattr('course_id', 'equalto', course.id)|list %}
+                    <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-primary w-100">Continue Learning</a>
+                    {% else %}
+                    <a href="{{ url_for('enroll_course', course_id=course.id) }}" class="btn btn-primary w-100">Enroll Now</a>
+                    {% endif %}
+                {% else %}
+                <a href="{{ url_for('login') }}" class="btn btn-primary w-100">Login to Enroll</a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% else %}
+    <div class="col-12">
+        <div class="alert alert-info">
+            No courses found matching your criteria.
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %} 

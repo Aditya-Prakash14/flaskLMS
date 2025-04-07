@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }} - Tests{% endblock %}
+
+{% block styles %}
+<style>
+    .test-card {
+        background: white;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+        border: 1px solid rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+    }
+    
+    .test-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .test-header {
+        padding: 1.5rem;
+        border-bottom: 1px solid #f8f9fa;
+    }
+    
+    .test-body {
+        padding: 1.5rem;
+    }
+    
+    .test-footer {
+        padding: 1rem 1.5rem;
+        background: #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    
+    .badge-outline-success {
+        color: #198754;
+        border: 1px solid #198754;
+        background-color: rgba(25, 135, 84, 0.1);
+    }
+    
+    .badge-outline-danger {
+        color: #dc3545;
+        border: 1px solid #dc3545;
+        background-color: rgba(220, 53, 69, 0.1);
+    }
+    
+    .badge-outline-warning {
+        color: #ffc107;
+        border: 1px solid #ffc107;
+        background-color: rgba(255, 193, 7, 0.1);
+    }
+    
+    .badge-outline-info {
+        color: #0dcaf0;
+        border: 1px solid #0dcaf0;
+        background-color: rgba(13, 202, 240, 0.1);
+    }
+    
+    .test-stats {
+        display: flex;
+        gap: 1.5rem;
+        margin-top: 1rem;
+    }
+    
+    .test-stat {
+        display: flex;
+        align-items: center;
+    }
+    
+    .test-stat i {
+        margin-right: 0.5rem;
+        color: #6c757d;
+    }
+    
+    .test-result {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .test-result.passed {
+        background: rgba(25, 135, 84, 0.1);
+        border-left: 4px solid #198754;
+    }
+    
+    .test-result.failed {
+        background: rgba(220, 53, 69, 0.1);
+        border-left: 4px solid #dc3545;
+    }
+    
+    .score-badge {
+        font-size: 1.25rem;
+        font-weight: 700;
+        padding: 0.35rem 0.65rem;
+    }
+    
+    .course-header {
+        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="course-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2">
+                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-white opacity-75">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.id) }}" class="text-white opacity-75">{{ course.title }}</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Tests</li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0">{{ course.title }} - Tests & Assessments</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            {% if not tests %}
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i> There are no tests available for this course yet.
+                </div>
+            {% else %}
+                {% for test in tests %}
+                    <div class="test-card">
+                        <div class="test-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h2 class="h5 mb-0">{{ test.title }}</h2>
+                                {% if test.id in test_attempts %}
+                                    {% if test_attempts[test.id].passed %}
+                                        <span class="badge bg-success rounded-pill">
+                                            <i class="fas fa-check-circle me-1"></i> Passed
+                                        </span>
+                                    {% else %}
+                                        <span class="badge bg-danger rounded-pill">
+                                            <i class="fas fa-times-circle me-1"></i> Failed
+                                        </span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-secondary rounded-pill">
+                                        <i class="fas fa-clock me-1"></i> Not Attempted
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <p class="text-muted small mb-0 mt-2">{{ test.description }}</p>
+                        </div>
+                        
+                        <div class="test-body">
+                            <div class="test-stats">
+                                <div class="test-stat">
+                                    <i class="fas fa-question-circle"></i>
+                                    <span>{{ test.questions|length }} Questions</span>
+                                </div>
+                                <div class="test-stat">
+                                    <i class="fas fa-trophy"></i>
+                                    <span>Passing Score: {{ test.passing_score }}%</span>
+                                </div>
+                                {% if test.time_limit > 0 %}
+                                    <div class="test-stat">
+                                        <i class="fas fa-clock"></i>
+                                        <span>Time Limit: {{ test.time_limit }} minutes</span>
+                                    </div>
+                                {% else %}
+                                    <div class="test-stat">
+                                        <i class="fas fa-infinity"></i>
+                                        <span>No Time Limit</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            {% if test.id in test_attempts %}
+                                <div class="test-result {{ 'passed' if test_attempts[test.id].passed else 'failed' }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h5 class="mb-1">Your Result</h5>
+                                            <p class="mb-0 text-muted small">
+                                                Completed on {{ test_attempts[test.id].date.strftime('%B %d, %Y at %H:%M') }}
+                                            </p>
+                                        </div>
+                                        <span class="score-badge badge {{ 'bg-success' if test_attempts[test.id].passed else 'bg-danger' }}">
+                                            {{ "%.1f"|format(test_attempts[test.id].score) }}%
+                                        </span>
+                                    </div>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="test-footer">
+                            <div>
+                                {% if test.id in test_attempts %}
+                                    <span class="badge badge-outline-info rounded-pill">
+                                        <i class="fas fa-redo me-1"></i> You can retake this test
+                                    </span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% if test.id in test_attempts %}
+                                    <a href="{{ url_for('test_results', attempt_id=test_attempts[test.id].attempt_id) }}" class="btn btn-outline-primary me-2">
+                                        <i class="fas fa-eye me-1"></i> View Results
+                                    </a>
+                                {% endif %}
+                                <a href="{{ url_for('take_test', test_id=test.id) }}" class="btn btn-primary">
+                                    {% if test.id in test_attempts %}
+                                        <i class="fas fa-redo me-1"></i> Retake Test
+                                    {% else %}
+                                        <i class="fas fa-play me-1"></i> Start Test
+                                    {% endif %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="mt-4">
+        <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Course
+        </a>
+    </div>
+</div>
+{% endblock %} 

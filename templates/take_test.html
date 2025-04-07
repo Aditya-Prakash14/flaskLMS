@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% block title %}{{ test.title }}{% endblock %}
+
+{% block styles %}
+<style>
+    .test-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .test-header {
+        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .test-info {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .question-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .question-card:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .question-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: #f8f9fa;
+        color: #0d6efd;
+        border-radius: 50%;
+        margin-right: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .option-label {
+        display: block;
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+    
+    .option-label:hover {
+        background-color: #f8f9fa;
+        border-color: #0d6efd;
+    }
+    
+    .option-input {
+        margin-right: 0.75rem;
+    }
+    
+    .option-input:checked + .option-label {
+        background-color: rgba(13, 110, 253, 0.1);
+        border-color: #0d6efd;
+    }
+    
+    .timer-container {
+        position: fixed;
+        top: 100px;
+        right: 20px;
+        background: white;
+        border-radius: 16px;
+        padding: 1rem;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        z-index: 1000;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        width: 120px;
+    }
+    
+    .timer-circle {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: #f8f9fa;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+    
+    .timer-circle-bg {
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: conic-gradient(#0d6efd 0%, #e9ecef 0%);
+        transition: background 1s linear;
+    }
+    
+    .timer-circle-inner {
+        position: relative;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        background: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #0d6efd;
+    }
+    
+    .timer-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-align: center;
+    }
+    
+    .short-answer {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .test-navigation {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        padding: 1rem 0;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        z-index: 1000;
+        margin-top: 2rem;
+    }
+    
+    @media (max-width: 767.98px) {
+        .timer-container {
+            position: static;
+            margin: 0 auto 1.5rem;
+            width: 100%;
+            flex-direction: row;
+            justify-content: center;
+        }
+        
+        .timer-circle {
+            margin-right: 1rem;
+            margin-bottom: 0;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="test-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2">
+                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-white opacity-75">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.id) }}" class="text-white opacity-75">{{ course.title }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('course_tests', course_id=course.id) }}" class="text-white opacity-75">Tests</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">{{ test.title }}</li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0">{{ test.title }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="test-container">
+        {% if test.time_limit > 0 %}
+            <div class="timer-container d-none d-md-flex" id="timer-container">
+                <div class="timer-circle">
+                    <div class="timer-circle-bg" id="timer-circle-bg"></div>
+                    <div class="timer-circle-inner">
+                        <span id="timer-display">{{ test.time_limit }}:00</span>
+                    </div>
+                </div>
+                <div class="timer-label">Time Remaining</div>
+            </div>
+            
+            <!-- Mobile timer (visible on small screens) -->
+            <div class="d-md-none mb-4">
+                <div class="alert alert-info">
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-clock me-2"></i>
+                        <div>
+                            <div class="fw-bold">Time Remaining</div>
+                            <div id="mobile-timer-display">{{ test.time_limit }}:00</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        
+        <div class="test-info">
+            <h2 class="h5 mb-3">Test Instructions</h2>
+            <p>{{ test.description }}</p>
+            <ul class="mb-0">
+                <li>This test contains <strong>{{ questions|length }}</strong> questions.</li>
+                <li>Passing score is <strong>{{ test.passing_score }}%</strong>.</li>
+                {% if test.time_limit > 0 %}
+                    <li>You have <strong>{{ test.time_limit }} minutes</strong> to complete this test.</li>
+                {% else %}
+                    <li>There is no time limit for this test.</li>
+                {% endif %}
+                <li>Answer all questions to the best of your ability.</li>
+                <li>You can review and change your answers before submitting.</li>
+            </ul>
+        </div>
+        
+        <form method="POST" id="test-form">
+            <input type="hidden" name="attempt_id" value="{{ attempt.id }}">
+            
+            {% for question in questions %}
+                <div class="question-card" id="question-{{ loop.index }}">
+                    <div class="d-flex align-items-center mb-3">
+                        <span class="question-number">{{ loop.index }}</span>
+                        <h3 class="h5 mb-0">{{ question.text }}</h3>
+                    </div>
+                    
+                    {% if question.type == 'multiple_choice' or question.type == 'true_false' %}
+                        <div class="options-container">
+                            {% for option in question.options %}
+                                <div class="form-check custom-option">
+                                    <input class="option-input" type="radio" name="question_{{ question.id }}" id="option-{{ question.id }}-{{ loop.index0 }}" value="{{ loop.index0 }}" required>
+                                    <label class="option-label" for="option-{{ question.id }}-{{ loop.index0 }}">
+                                        {{ option.text }}
+                                    </label>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% elif question.type == 'short_answer' %}
+                        <div class="short-answer">
+                            <div class="mb-3">
+                                <label for="question-{{ question.id }}-answer" class="form-label">Your Answer</label>
+                                <input type="text" class="form-control" id="question-{{ question.id }}-answer" name="question_{{ question.id }}" required>
+                            </div>
+                        </div>
+                    {% endif %}
+                </div>
+            {% endfor %}
+            
+            <div class="test-navigation">
+                <div class="container">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <a href="{{ url_for('course_tests', course_id=course.id) }}" class="btn btn-outline-secondary" id="leave-test-btn">
+                            <i class="fas fa-times me-1"></i> Cancel Test
+                        </a>
+                        <button type="submit" class="btn btn-primary" id="submit-test-btn">
+                            <i class="fas fa-check me-1"></i> Submit Test
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Initialize form validation
+        const form = document.getElementById('test-form');
+        const submitButton = document.getElementById('submit-test-btn');
+        
+        form.addEventListener('submit', function(e) {
+            if (!form.checkValidity()) {
+                e.preventDefault();
+                e.stopPropagation();
+                
+                // Find first invalid question
+                const invalidInputs = form.querySelectorAll(':invalid');
+                if (invalidInputs.length > 0) {
+                    const invalidQuestion = invalidInputs[0].closest('.question-card');
+                    if (invalidQuestion) {
+                        invalidQuestion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        
+                        // Highlight the invalid question
+                        invalidQuestion.style.borderColor = '#dc3545';
+                        setTimeout(function() {
+                            invalidQuestion.style.borderColor = 'rgba(0,0,0,0.05)';
+                        }, 2000);
+                    }
+                }
+                
+                alert('Please answer all questions before submitting.');
+            } else {
+                // Confirm before submit
+                if (!confirm('Are you sure you want to submit your test? You cannot change your answers after submission.')) {
+                    e.preventDefault();
+                } else {
+                    submitButton.disabled = true;
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin me-1"></i> Submitting...';
+                }
+            }
+        });
+        
+        // Warning before leaving page
+        window.addEventListener('beforeunload', function(e) {
+            if (!form.dataset.submitted) {
+                e.preventDefault();
+                e.returnValue = 'You have unsaved changes. Are you sure you want to leave?';
+            }
+        });
+        
+        // Set the form as submitted when submit button is clicked
+        submitButton.addEventListener('click', function() {
+            form.dataset.submitted = 'true';
+        });
+        
+        {% if test.time_limit > 0 %}
+            // Initialize timer
+            const timerDisplay = document.getElementById('timer-display');
+            const mobileTimerDisplay = document.getElementById('mobile-timer-display');
+            const timerCircleBg = document.getElementById('timer-circle-bg');
+            const totalSeconds = {{ test.time_limit }} * 60;
+            let secondsRemaining = totalSeconds;
+            
+            function updateTimer() {
+                const minutes = Math.floor(secondsRemaining / 60);
+                const seconds = secondsRemaining % 60;
+                
+                // Update timer display
+                timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                mobileTimerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                
+                // Update timer circle background
+                const progress = (secondsRemaining / totalSeconds) * 100;
+                timerCircleBg.style.background = `conic-gradient(#0d6efd ${progress}%, #e9ecef 0%)`;
+                
+                // Change color when time is running out
+                if (secondsRemaining <= 60) {
+                    timerDisplay.style.color = '#dc3545';
+                    timerCircleBg.style.background = `conic-gradient(#dc3545 ${progress}%, #e9ecef 0%)`;
+                }
+                
+                // Decrement timer
+                secondsRemaining--;
+                
+                // Check if time's up
+                if (secondsRemaining < 0) {
+                    clearInterval(timerInterval);
+                    alert('Time\'s up! Your test will be submitted automatically.');
+                    form.dataset.submitted = 'true';
+                    form.submit();
+                }
+            }
+            
+            // Update timer every second
+            updateTimer();
+            const timerInterval = setInterval(updateTimer, 1000);
+        {% endif %}
+        
+        // Handle leave test button
+        document.getElementById('leave-test-btn').addEventListener('click', function(e) {
+            if (!confirm('Are you sure you want to leave? Your progress will be lost.')) {
+                e.preventDefault();
+            } else {
+                window.removeEventListener('beforeunload', function() {});
+            }
+        });
+    });
+</script>
+{% endblock %} 

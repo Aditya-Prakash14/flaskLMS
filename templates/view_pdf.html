@@ -1,0 +1,155 @@
+{% extends "base.html" %}
+
+{% block title %}{{ pdf.title }}{% endblock %}
+
+{% block styles %}
+<style>
+    .pdf-header {
+        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .pdf-container {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .pdf-viewer {
+        width: 100%;
+        height: 800px;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+    }
+    
+    .pdf-sidebar {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+        border: 1px solid rgba(0,0,0,0.05);
+        position: sticky;
+        top: 2rem;
+    }
+    
+    .pdf-detail {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .pdf-detail i {
+        width: 30px;
+        height: 30px;
+        border-radius: 50%;
+        background: rgba(13, 110, 253, 0.1);
+        color: #0d6efd;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+    }
+    
+    .pdf-detail-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        margin-bottom: 0;
+    }
+    
+    .pdf-download-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-top: 1.5rem;
+    }
+    
+    .pdf-download-btn i {
+        margin-right: 0.5rem;
+    }
+    
+    @media (max-width: 767.98px) {
+        .pdf-viewer {
+            height: 500px;
+        }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="pdf-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2">
+                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-white opacity-75">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.id) }}" class="text-white opacity-75">{{ course.title }}</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">{{ pdf.title }}</li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0">{{ pdf.title }}</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8">
+            <div class="pdf-container">
+                <embed class="pdf-viewer" src="{{ pdf.file_path }}" type="application/pdf">
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="pdf-sidebar">
+                <h2 class="h5 mb-4">Resource Information</h2>
+                
+                <div class="pdf-detail">
+                    <i class="fas fa-file-pdf"></i>
+                    <div>
+                        <p class="pdf-detail-label">Resource Type</p>
+                        <p class="mb-0">PDF Document</p>
+                    </div>
+                </div>
+                
+                <div class="pdf-detail">
+                    <i class="fas fa-book"></i>
+                    <div>
+                        <p class="pdf-detail-label">Course</p>
+                        <p class="mb-0">{{ course.title }}</p>
+                    </div>
+                </div>
+                
+                <div class="pdf-detail">
+                    <i class="fas fa-calendar-alt"></i>
+                    <div>
+                        <p class="pdf-detail-label">Added On</p>
+                        <p class="mb-0">{{ pdf.created_at.strftime('%B %d, %Y') }}</p>
+                    </div>
+                </div>
+                
+                {% if pdf.description %}
+                    <hr class="my-4">
+                    <h3 class="h6 mb-3">Description</h3>
+                    <p>{{ pdf.description }}</p>
+                {% endif %}
+                
+                <a href="{{ pdf.file_path }}" class="btn btn-primary w-100 pdf-download-btn" download>
+                    <i class="fas fa-download"></i> Download PDF
+                </a>
+                
+                <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-outline-secondary w-100 mt-3">
+                    <i class="fas fa-arrow-left me-2"></i> Back to Course
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

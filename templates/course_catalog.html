@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+
+{% block title %}Course Catalog{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <!-- Filter Sidebar -->
+        <div class="col-md-3">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h5 class="card-title mb-4">Filters</h5>
+                    
+                    <!-- Search -->
+                    <form action="{{ url_for('course_catalog') }}" method="GET" class="mb-4">
+                        <div class="input-group">
+                            <input type="text" name="search" class="form-control" placeholder="Search courses..." value="{{ search_term }}">
+                            <button class="btn btn-primary" type="submit">
+                                <i class="fas fa-search"></i>
+                            </button>
+                        </div>
+                    </form>
+                    
+                    <!-- Categories -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Categories</h6>
+                        <div class="list-group">
+                            <a href="{{ url_for('course_catalog') }}" class="list-group-item list-group-item-action {% if not current_category %}active{% endif %}">
+                                All Categories
+                            </a>
+                            {% for category in categories %}
+                            <a href="{{ url_for('course_catalog', category=category.id) }}" 
+                               class="list-group-item list-group-item-action {% if current_category == category.id %}active{% endif %}">
+                                {{ category.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Difficulty Levels -->
+                    <div class="mb-4">
+                        <h6 class="mb-3">Difficulty Level</h6>
+                        <div class="list-group">
+                            <a href="{{ url_for('course_catalog') }}" class="list-group-item list-group-item-action {% if not current_difficulty %}active{% endif %}">
+                                All Levels
+                            </a>
+                            {% for level in difficulty_levels %}
+                            <a href="{{ url_for('course_catalog', difficulty=level) }}" 
+                               class="list-group-item list-group-item-action {% if current_difficulty == level %}active{% endif %}">
+                                {{ level }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Course Grid -->
+        <div class="col-md-9">
+            <div class="row g-4">
+                {% for course in courses.items %}
+                <div class="col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm">
+                        {% if course.image_url %}
+                        <img src="{{ course.image_url }}" class="card-img-top" alt="{{ course.title }}">
+                        {% else %}
+                        <div class="card-img-top bg-light d-flex align-items-center justify-content-center" style="height: 200px;">
+                            <i class="fas fa-image fa-3x text-muted"></i>
+                        </div>
+                        {% endif %}
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="badge bg-primary">{{ course.category.name }}</span>
+                                <span class="badge bg-secondary">{{ course.difficulty_level }}</span>
+                            </div>
+                            <h5 class="card-title">{{ course.title }}</h5>
+                            <p class="card-text text-muted">{{ course.description|truncate(100) }}</p>
+                            
+                            <div class="d-flex justify-content-between align-items-center mt-3">
+                                <div>
+                                    <div class="d-flex align-items-center">
+                                        <div class="me-2">
+                                            {% for i in range(5) %}
+                                            {% if i < course.average_rating|round|int %}
+                                            <i class="fas fa-star text-warning"></i>
+                                            {% else %}
+                                            <i class="far fa-star text-warning"></i>
+                                            {% endif %}
+                                            {% endfor %}
+                                        </div>
+                                        <small class="text-muted">{{ course.average_rating|round(1) if course.average_rating else 'No ratings' }}</small>
+                                    </div>
+                                    <small class="text-muted">{{ course.enrollments|length }} enrolled</small>
+                                </div>
+                                <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-sm btn-outline-primary">Learn More</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% else %}
+                <div class="col-12">
+                    <div class="alert alert-info">
+                        No courses found matching your criteria.
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Pagination -->
+            {% if courses.pages > 1 %}
+            <nav aria-label="Page navigation" class="mt-4">
+                <ul class="pagination justify-content-center">
+                    {% for page in courses.iter_pages() %}
+                        {% if page %}
+                            <li class="page-item {% if page == courses.page %}active{% endif %}">
+                                <a class="page-link" href="{{ url_for('course_catalog', page=page, category=current_category, difficulty=current_difficulty, search=search_term) }}">
+                                    {{ page }}
+                                </a>
+                            </li>
+                        {% else %}
+                            <li class="page-item disabled">
+                                <span class="page-link">...</span>
+                            </li>
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </nav>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %} 

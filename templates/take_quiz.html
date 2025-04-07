@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+
+{% block title %}Take Quiz - {{ quiz.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">{{ quiz.title }}</h4>
+                    {% if quiz.description %}
+                    <p class="mb-0">{{ quiz.description }}</p>
+                    {% endif %}
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        {% if quiz.time_limit > 0 %}
+                        This quiz has a time limit of {{ quiz.time_limit }} minutes.
+                        {% endif %}
+                        Passing score: {{ quiz.passing_score }}%
+                    </div>
+                    
+                    <form method="POST" id="quizForm">
+                        {% for question in quiz.questions %}
+                        <div class="question-container mb-4">
+                            <div class="card">
+                                <div class="card-body">
+                                    <h5 class="card-title">Question {{ loop.index }}</h5>
+                                    <p class="card-text">{{ question.question_text }}</p>
+                                    <p class="text-muted">Points: {{ question.points }}</p>
+                                    
+                                    <div class="options-list">
+                                        {% for option in question.options %}
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="radio" 
+                                                   name="question_{{ question.id }}" 
+                                                   id="option_{{ option.id }}" 
+                                                   value="{{ option.id }}" required>
+                                            <label class="form-check-label" for="option_{{ option.id }}">
+                                                {{ option.option_text }}
+                                            </label>
+                                        </div>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Submit Quiz</button>
+                            <a href="{{ url_for('course_detail', course_id=course.id) }}" class="btn btn-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+{% if quiz.time_limit > 0 %}
+// Timer functionality
+let timeLeft = {{ quiz.time_limit * 60 }}; // Convert minutes to seconds
+const timerDisplay = document.createElement('div');
+timerDisplay.className = 'alert alert-warning text-center';
+timerDisplay.innerHTML = `<i class="fas fa-clock"></i> Time remaining: <span id="timer">${Math.floor(timeLeft / 60)}:${(timeLeft % 60).toString().padStart(2, '0')}</span>`;
+document.querySelector('.card-body').insertBefore(timerDisplay, document.getElementById('quizForm'));
+
+const timer = setInterval(function() {
+    timeLeft--;
+    const minutes = Math.floor(timeLeft / 60);
+    const seconds = timeLeft % 60;
+    document.getElementById('timer').textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    
+    if (timeLeft <= 0) {
+        clearInterval(timer);
+        document.getElementById('quizForm').submit();
+    }
+}, 1000);
+{% endif %}
+
+// Form validation
+document.getElementById('quizForm').addEventListener('submit', function(e) {
+    const unanswered = document.querySelectorAll('input[type="radio"]:not(:checked)');
+    if (unanswered.length > 0) {
+        e.preventDefault();
+        alert('Please answer all questions before submitting.');
+    }
+});
+</script>
+{% endblock %}
+{% endblock %} 

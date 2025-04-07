@@ -1,0 +1,326 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Content{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Manage Content</h2>
+    
+    <!-- Content Creation Form -->
+    <div class="card mb-4">
+        <div class="card-header">
+            <h4>Create New Content</h4>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url_for('manage_content') }}">
+                <div class="mb-3">
+                    <label for="title" class="form-label">Title</label>
+                    <input type="text" class="form-control" id="title" name="title" required>
+                </div>
+                
+                <div class="mb-3">
+                    <label for="content" class="form-label">Content</label>
+                    <textarea class="form-control" id="content" name="content" rows="5" required></textarea>
+                </div>
+
+                <!-- Quiz Section -->
+                <div class="mb-3">
+                    <h5>Add Quiz</h5>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="add_quiz" name="add_quiz">
+                        <label class="form-check-label" for="add_quiz">
+                            Include a quiz with this content
+                        </label>
+                    </div>
+                    
+                    <div id="quiz_options" style="display: none;">
+                        <div class="mb-2">
+                            <label for="quiz_title" class="form-label">Quiz Title</label>
+                            <input type="text" class="form-control" id="quiz_title" name="quiz_title">
+                        </div>
+                        <div class="mb-2">
+                            <label for="quiz_description" class="form-label">Quiz Description</label>
+                            <textarea class="form-control" id="quiz_description" name="quiz_description" rows="2"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="time_limit" class="form-label">Time Limit (minutes)</label>
+                                <input type="number" class="form-control" id="time_limit" name="time_limit" min="0" value="0">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="passing_score" class="form-label">Passing Score (%)</label>
+                                <input type="number" class="form-control" id="passing_score" name="passing_score" min="0" max="100" value="70">
+                            </div>
+                        </div>
+                        <div id="questions_container">
+                            <!-- Questions will be added here dynamically -->
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm mt-2" onclick="addQuestion()">Add Question</button>
+                    </div>
+                </div>
+
+                <!-- Test Section -->
+                <div class="mb-3">
+                    <h5>Add Test</h5>
+                    <div class="form-check mb-2">
+                        <input class="form-check-input" type="checkbox" id="add_test" name="add_test">
+                        <label class="form-check-label" for="add_test">
+                            Include a test with this content
+                        </label>
+                    </div>
+                    
+                    <div id="test_options" style="display: none;">
+                        <div class="mb-2">
+                            <label for="test_title" class="form-label">Test Title</label>
+                            <input type="text" class="form-control" id="test_title" name="test_title">
+                        </div>
+                        <div class="mb-2">
+                            <label for="test_description" class="form-label">Test Description</label>
+                            <textarea class="form-control" id="test_description" name="test_description" rows="2"></textarea>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label for="test_time_limit" class="form-label">Time Limit (minutes)</label>
+                                <input type="number" class="form-control" id="test_time_limit" name="test_time_limit" min="0" value="0">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="test_passing_score" class="form-label">Passing Score (%)</label>
+                                <input type="number" class="form-control" id="test_passing_score" name="test_passing_score" min="0" max="100" value="70">
+                            </div>
+                        </div>
+                        <div id="test_questions_container">
+                            <!-- Test questions will be added here dynamically -->
+                        </div>
+                        <button type="button" class="btn btn-secondary btn-sm mt-2" onclick="addTestQuestion()">Add Test Question</button>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary">Create Content</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Existing Content List -->
+    <div class="card">
+        <div class="card-header">
+            <h4>Existing Content</h4>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Created At</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for content in contents %}
+                        <tr>
+                            <td>{{ content.title }}</td>
+                            <td>{{ content.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                            <td>
+                                <a href="{{ url_for('edit_content', content_id=content.id) }}" class="btn btn-sm btn-primary">Edit</a>
+                                <a href="{{ url_for('delete_content', content_id=content.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('Are you sure?')">Delete</a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+let questionCount = 0;
+let testQuestionCount = 0;
+
+// Quiz functionality
+document.getElementById('add_quiz').addEventListener('change', function() {
+    document.getElementById('quiz_options').style.display = this.checked ? 'block' : 'none';
+});
+
+function addQuestion() {
+    const container = document.getElementById('questions_container');
+    const questionDiv = document.createElement('div');
+    questionDiv.className = 'card mb-2';
+    questionDiv.innerHTML = `
+        <div class="card-body">
+            <div class="mb-2">
+                <label class="form-label">Question ${questionCount + 1}</label>
+                <input type="text" class="form-control" name="question_${questionCount}" required>
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Question Type</label>
+                <select class="form-select" name="question_type_${questionCount}" onchange="toggleOptions(this, ${questionCount})">
+                    <option value="multiple_choice">Multiple Choice</option>
+                    <option value="true_false">True/False</option>
+                </select>
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Points</label>
+                <input type="number" class="form-control" name="points_${questionCount}" value="1" min="1">
+            </div>
+            <div id="options_${questionCount}">
+                <div class="mb-2">
+                    <label class="form-label">Options</label>
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" name="option_${questionCount}_0" required>
+                        <div class="input-group-text">
+                            <input type="radio" name="correct_${questionCount}" value="0" required>
+                        </div>
+                    </div>
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" name="option_${questionCount}_1" required>
+                        <div class="input-group-text">
+                            <input type="radio" name="correct_${questionCount}" value="1" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">Remove Question</button>
+        </div>
+    `;
+    container.appendChild(questionDiv);
+    questionCount++;
+}
+
+function toggleOptions(select, questionIndex) {
+    const optionsDiv = document.getElementById(`options_${questionIndex}`);
+    if (select.value === 'true_false') {
+        optionsDiv.innerHTML = `
+            <div class="mb-2">
+                <label class="form-label">Options</label>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" name="option_${questionIndex}_0" value="True" readonly>
+                    <div class="input-group-text">
+                        <input type="radio" name="correct_${questionIndex}" value="0" required>
+                    </div>
+                </div>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" name="option_${questionIndex}_1" value="False" readonly>
+                    <div class="input-group-text">
+                        <input type="radio" name="correct_${questionIndex}" value="1" required>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else {
+        optionsDiv.innerHTML = `
+            <div class="mb-2">
+                <label class="form-label">Options</label>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" name="option_${questionIndex}_0" required>
+                    <div class="input-group-text">
+                        <input type="radio" name="correct_${questionIndex}" value="0" required>
+                    </div>
+                </div>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" name="option_${questionIndex}_1" required>
+                    <div class="input-group-text">
+                        <input type="radio" name="correct_${questionIndex}" value="1" required>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+
+// Test functionality
+document.getElementById('add_test').addEventListener('change', function() {
+    document.getElementById('test_options').style.display = this.checked ? 'block' : 'none';
+});
+
+function addTestQuestion() {
+    const container = document.getElementById('test_questions_container');
+    const questionDiv = document.createElement('div');
+    questionDiv.className = 'card mb-2';
+    questionDiv.innerHTML = `
+        <div class="card-body">
+            <div class="mb-2">
+                <label class="form-label">Question ${testQuestionCount + 1}</label>
+                <input type="text" class="form-control" name="test_question_${testQuestionCount}" required>
+            </div>
+            <div class="mb-2">
+                <label class="form-label">Question Type</label>
+                <select class="form-select" name="test_question_type_${testQuestionCount}" onchange="toggleTestOptions(this, ${testQuestionCount})">
+                    <option value="multiple_choice">Multiple Choice</option>
+                    <option value="true_false">True/False</option>
+                    <option value="short_answer">Short Answer</option>
+                </select>
+            </div>
+            <div id="test_options_${testQuestionCount}">
+                <div class="mb-2">
+                    <label class="form-label">Options</label>
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" name="test_option_${testQuestionCount}_0" required>
+                        <div class="input-group-text">
+                            <input type="radio" name="test_correct_${testQuestionCount}" value="0" required>
+                        </div>
+                    </div>
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" name="test_option_${testQuestionCount}_1" required>
+                        <div class="input-group-text">
+                            <input type="radio" name="test_correct_${testQuestionCount}" value="1" required>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button type="button" class="btn btn-danger btn-sm" onclick="this.parentElement.parentElement.remove()">Remove Question</button>
+        </div>
+    `;
+    container.appendChild(questionDiv);
+    testQuestionCount++;
+}
+
+function toggleTestOptions(select, questionIndex) {
+    const optionsDiv = document.getElementById(`test_options_${questionIndex}`);
+    if (select.value === 'true_false') {
+        optionsDiv.innerHTML = `
+            <div class="mb-2">
+                <label class="form-label">Options</label>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" name="test_option_${questionIndex}_0" value="True" readonly>
+                    <div class="input-group-text">
+                        <input type="radio" name="test_correct_${questionIndex}" value="0" required>
+                    </div>
+                </div>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" name="test_option_${questionIndex}_1" value="False" readonly>
+                    <div class="input-group-text">
+                        <input type="radio" name="test_correct_${questionIndex}" value="1" required>
+                    </div>
+                </div>
+            </div>
+        `;
+    } else if (select.value === 'short_answer') {
+        optionsDiv.innerHTML = `
+            <div class="mb-2">
+                <label class="form-label">Correct Answer</label>
+                <input type="text" class="form-control" name="test_correct_answer_${questionIndex}" required>
+            </div>
+        `;
+    } else {
+        optionsDiv.innerHTML = `
+            <div class="mb-2">
+                <label class="form-label">Options</label>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" name="test_option_${questionIndex}_0" required>
+                    <div class="input-group-text">
+                        <input type="radio" name="test_correct_${questionIndex}" value="0" required>
+                    </div>
+                </div>
+                <div class="input-group mb-2">
+                    <input type="text" class="form-control" name="test_option_${questionIndex}_1" required>
+                    <div class="input-group-text">
+                        <input type="radio" name="test_correct_${questionIndex}" value="1" required>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+}
+</script>
+{% endblock %} 

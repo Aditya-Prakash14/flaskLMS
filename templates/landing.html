@@ -1,0 +1,336 @@
+{% extends "base.html" %}
+
+{% block title %}Welcome to LMS{% endblock %}
+
+{% block styles %}
+<style>
+    .hero-section {
+        background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+        color: white;
+        padding: 6rem 0;
+        margin-bottom: 4rem;
+    }
+    
+    .hero-title {
+        font-size: 3.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.25rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+    
+    .feature-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(13, 110, 253, 0.1);
+        border-radius: 16px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+    
+    .feature-icon i {
+        font-size: 2rem;
+        color: #0d6efd;
+    }
+    
+    .feature-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 1rem;
+    }
+    
+    .feature-text {
+        color: #6c757d;
+    }
+    
+    .course-card {
+        height: 100%;
+    }
+    
+    .course-image {
+        height: 200px;
+        object-fit: cover;
+    }
+    
+    .stats-section {
+        background: #f8f9fa;
+        padding: 4rem 0;
+        margin: 4rem 0;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #0d6efd;
+        margin-bottom: 0.5rem;
+    }
+    
+    .stat-label {
+        color: #6c757d;
+        font-size: 1.1rem;
+    }
+    
+    .testimonial-section {
+        padding: 4rem 0;
+    }
+    
+    .testimonial-card {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        height: 100%;
+    }
+    
+    .testimonial-icon {
+        font-size: 2rem;
+        color: #0d6efd;
+        margin-bottom: 1rem;
+    }
+    
+    .testimonial-text {
+        font-style: italic;
+        color: #495057;
+        margin-bottom: 1.5rem;
+    }
+    
+    .testimonial-author {
+        font-weight: 600;
+        color: #0d6efd;
+    }
+    
+    .cta-section {
+        background: linear-gradient(135deg, #0d6efd 0%, #0dcaf0 100%);
+        color: white;
+        padding: 4rem 0;
+        text-align: center;
+        margin-top: 4rem;
+    }
+    
+    .cta-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        margin-bottom: 1.5rem;
+    }
+    
+    .cta-text {
+        font-size: 1.25rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<section class="hero-section text-white py-5" style="background: linear-gradient(135deg, #0d6efd, #0dcaf0);">
+    <div class="container py-5">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-3">Learn Skills for the Future</h1>
+                <p class="fs-5 mb-4">Access high-quality courses taught by industry experts. Expand your knowledge, enhance your skills, and achieve your goals.</p>
+                <div class="d-flex flex-wrap gap-2">
+                    {% if current_user.is_authenticated %}
+                        <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">My Dashboard</a>
+                        <a href="{{ url_for('course_catalog') }}" class="btn btn-outline-light btn-lg">Explore Courses</a>
+                    {% else %}
+                        <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">Get Started</a>
+                        <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">Sign In</a>
+                    {% endif %}
+                </div>
+            </div>
+            <div class="col-lg-6 d-none d-lg-block">
+                <img src="{{ url_for('static', filename='img/hero-image.svg') }}" alt="Learning illustration" class="img-fluid">
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Features Section -->
+<section class="py-5 bg-light">
+    <div class="container py-4">
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-8 text-center">
+                <h2 class="h1 mb-3">Why Choose Our Platform</h2>
+                <p class="lead">Discover the key features that make our learning platform stand out</p>
+            </div>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-primary bg-opacity-10 p-3 d-inline-flex mb-3">
+                            <i class="fas fa-graduation-cap text-primary fa-2x"></i>
+                        </div>
+                        <h3 class="h4 mb-3">Expert-Led Courses</h3>
+                        <p class="text-muted">Learn from industry professionals with real-world experience in their fields.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-success bg-opacity-10 p-3 d-inline-flex mb-3">
+                            <i class="fas fa-laptop-code text-success fa-2x"></i>
+                        </div>
+                        <h3 class="h4 mb-3">Hands-On Learning</h3>
+                        <p class="text-muted">Put theory into practice with interactive exercises and real-world projects.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-warning bg-opacity-10 p-3 d-inline-flex mb-3">
+                            <i class="fas fa-medal text-warning fa-2x"></i>
+                        </div>
+                        <h3 class="h4 mb-3">Recognized Certificates</h3>
+                        <p class="text-muted">Earn certificates upon completion to showcase your newly acquired skills.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Popular Courses Section -->
+<section class="py-5">
+    <div class="container py-4">
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-8 text-center">
+                <h2 class="h1 mb-3">Popular Courses</h2>
+                <p class="lead">Discover our most popular courses chosen by students like you</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for course_data in popular_courses %}
+            <div class="col-md-4">
+                <div class="card h-100">
+                    {% if course_data.course.image_url %}
+                    <img src="{{ course_data.course.image_url }}" class="card-img-top" alt="{{ course_data.course.title }}">
+                    {% else %}
+                    <img src="{{ url_for('static', filename='images/default-course.jpg') }}" class="card-img-top" alt="Default course image">
+                    {% endif %}
+                    <div class="card-body">
+                        <h5 class="card-title">{{ course_data.course.title }}</h5>
+                        <p class="card-text">{{ course_data.course.description[:150] }}...</p>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="rating">
+                                {% for i in range(5) %}
+                                    {% if i < course_data.avg_rating|round|int %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <span class="badge bg-primary">{{ course_data.enrollment_count }} students</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <div class="text-center mt-5">
+            <a href="{{ url_for('course_catalog') }}" class="btn btn-primary btn-lg">View All Courses</a>
+        </div>
+    </div>
+</section>
+
+<!-- Statistics Section -->
+<section class="py-5 bg-primary bg-opacity-10">
+    <div class="container py-4">
+        <div class="row g-4 text-center">
+            <div class="col-md-4">
+                <div class="px-4">
+                    <h2 class="display-4 fw-bold text-primary mb-3">{{ total_courses }}</h2>
+                    <p class="h5 text-dark">Total Courses</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="px-4">
+                    <h2 class="display-4 fw-bold text-primary mb-3">{{ total_users }}</h2>
+                    <p class="h5 text-dark">Active Users</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="px-4">
+                    <h2 class="display-4 fw-bold text-primary mb-3">{{ total_enrollments }}</h2>
+                    <p class="h5 text-dark">Course Enrollments</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Testimonials Section -->
+<section class="py-5">
+    <div class="container py-4">
+        <div class="row justify-content-center mb-5">
+            <div class="col-md-8 text-center">
+                <h2 class="h1 mb-3">What Our Students Say</h2>
+                <p class="lead">Hear from our community of learners about their experiences</p>
+            </div>
+        </div>
+        
+        <div class="row g-4">
+            {% for testimonial in testimonials %}
+                <div class="col-md-4">
+                    <div class="card h-100 border-0 shadow-sm">
+                        <div class="card-body p-4">
+                            <div class="mb-3">
+                                {% for i in range(5) %}
+                                    {% if i < testimonial.rating %}
+                                        <i class="fas fa-star text-warning"></i>
+                                    {% else %}
+                                        <i class="far fa-star text-warning"></i>
+                                    {% endif %}
+                                {% endfor %}
+                            </div>
+                            <p class="card-text mb-4">"{{ testimonial.comment }}"</p>
+                            <div class="d-flex align-items-center">
+                                <div class="bg-primary text-white rounded-circle me-3 d-flex align-items-center justify-content-center" style="width: 48px; height: 48px;">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                                <div>
+                                    <h3 class="h6 mb-0">{{ testimonial.user.username }}</h3>
+                                    <p class="small text-muted mb-0">{{ testimonial.course.title }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action Section -->
+<section class="py-5 text-white" style="background: linear-gradient(135deg, #0d6efd, #0dcaf0);">
+    <div class="container py-4 text-center">
+        <h2 class="h1 mb-4">Ready to Start Learning?</h2>
+        <p class="lead mb-5">Join thousands of students already learning on our platform.</p>
+        <div class="d-flex justify-content-center flex-wrap gap-3">
+            {% if current_user.is_authenticated %}
+                <a href="{{ url_for('dashboard') }}" class="btn btn-light btn-lg">Go to Dashboard</a>
+                <a href="{{ url_for('course_catalog') }}" class="btn btn-outline-light btn-lg">Browse Courses</a>
+            {% else %}
+                <a href="{{ url_for('register') }}" class="btn btn-light btn-lg">Create Account</a>
+                <a href="{{ url_for('login') }}" class="btn btn-outline-light btn-lg">Sign In</a>
+            {% endif %}
+        </div>
+    </div>
+</section>
+{% endblock %} 

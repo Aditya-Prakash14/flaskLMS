@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% block title %}{{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Course Header -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h1>{{ course.title }}</h1>
+            <p class="text-muted">{{ course.description }}</p>
+            <div class="d-flex align-items-center mb-3">
+                <span class="badge bg-primary me-2">{{ course.difficulty_level }}</span>
+                <span class="badge bg-secondary me-2">{{ course.estimated_duration }} hours</span>
+                {% if course.category %}
+                <span class="badge bg-info">{{ course.category.name }}</span>
+                {% endif %}
+            </div>
+            {% if course.tags %}
+            <div class="mb-3">
+                {% for tag in course.tags %}
+                <span class="badge bg-light text-dark me-1">{{ tag.name }}</span>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        <div class="col-md-4">
+            {% if course.image_url %}
+            <img src="{{ course.image_url }}" alt="{{ course.title }}" class="img-fluid rounded">
+            {% endif %}
+            <div class="card mt-3">
+                <div class="card-body">
+                    {% if not enrollment %}
+                    <a href="{{ url_for('enroll_course', course_id=course.id) }}" class="btn btn-primary w-100">Enroll Now</a>
+                    {% else %}
+                    <div class="progress mb-3">
+                        <div class="progress-bar" role="progressbar" style="width: {{ enrollment.progress }}%">
+                            {{ enrollment.progress|round|int }}%
+                        </div>
+                    </div>
+                    <p class="text-center mb-0">Your Progress</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Course Content -->
+    <div class="row">
+        <!-- Main Content -->
+        <div class="col-md-8">
+            <!-- Course Sections -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Course Content</h3>
+                </div>
+                <div class="card-body">
+                    {% if course.content and course.content.sections %}
+                    <div class="list-group">
+                        {% for section in course.content.sections %}
+                        <a href="{{ url_for('view_section', course_id=course.id, section_id=section.id) }}" 
+                           class="list-group-item list-group-item-action d-flex justify-content-between align-items-center">
+                            <div>
+                                <h5 class="mb-1">{{ section.title }}</h5>
+                                <small class="text-muted">{{ section.type|title }}</small>
+                            </div>
+                            {% if enrollment and section.id in enrollment.completed_section_list %}
+                            <span class="badge bg-success">Completed</span>
+                            {% endif %}
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No content sections available yet.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Quizzes -->
+            {% if course.quizzes %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Quizzes</h3>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for quiz in course.quizzes %}
+                        <a href="{{ url_for('take_quiz', course_id=course.id, quiz_id=quiz.id) }}" 
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">{{ quiz.title }}</h5>
+                                    <p class="mb-1">{{ quiz.description }}</p>
+                                    <small class="text-muted">
+                                        Time Limit: {{ quiz.time_limit }} minutes | 
+                                        Passing Score: {{ quiz.passing_score }}%
+                                    </small>
+                                </div>
+                                <span class="badge bg-primary">Take Quiz</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Tests -->
+            {% if course.tests %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Tests</h3>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for test in course.tests %}
+                        <a href="{{ url_for('take_test', test_id=test.id) }}" 
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">{{ test.title }}</h5>
+                                    <p class="mb-1">{{ test.description }}</p>
+                                    <small class="text-muted">
+                                        Time Limit: {{ test.time_limit }} minutes | 
+                                        Passing Score: {{ test.passing_score }}%
+                                    </small>
+                                </div>
+                                <span class="badge bg-primary">Take Test</span>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Sidebar -->
+        <div class="col-md-4">
+            <!-- Course Info -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Course Information</h3>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled">
+                        <li class="mb-2">
+                            <i class="fas fa-clock"></i> Duration: {{ course.estimated_duration }} hours
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-signal"></i> Level: {{ course.difficulty_level }}
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-folder"></i> Category: {{ course.category.name if course.category else 'Uncategorized' }}
+                        </li>
+                        {% if course.prerequisites %}
+                        <li class="mb-2">
+                            <i class="fas fa-list"></i> Prerequisites:
+                            <ul class="list-unstyled ms-3">
+                                {% for prereq in course.prerequisites %}
+                                <li>{{ prereq.title }}</li>
+                                {% endfor %}
+                            </ul>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Study Resources -->
+            {% if course.study_resources %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Study Resources</h3>
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        {% for resource in course.study_resources %}
+                        <a href="{{ url_for('view_resource', course_id=course.id, resource_id=resource.id) }}" 
+                           class="list-group-item list-group-item-action">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div>
+                                    <h5 class="mb-1">{{ resource.title }}</h5>
+                                    <p class="mb-1">{{ resource.description }}</p>
+                                    <small class="text-muted">{{ resource.resource_type|upper }}</small>
+                                </div>
+                                <i class="fas fa-chevron-right"></i>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Course Reviews -->
+            {% if course.reviews %}
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Course Reviews</h3>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h4 class="mb-0">{{ course.average_rating|round(1) }}</h4>
+                        <div class="text-warning">
+                            {% for i in range(course.average_rating|round|int) %}
+                            <i class="fas fa-star"></i>
+                            {% endfor %}
+                        </div>
+                        <small class="text-muted">{{ course.reviews|length }} reviews</small>
+                    </div>
+                    {% for review in course.reviews[:3] %}
+                    <div class="border-bottom pb-2 mb-2">
+                        <div class="d-flex justify-content-between">
+                            <h6 class="mb-1">{{ review.user.username }}</h6>
+                            <small class="text-muted">{{ review.created_at.strftime('%Y-%m-%d') }}</small>
+                        </div>
+                        <div class="text-warning mb-1">
+                            {% for i in range(review.rating) %}
+                            <i class="fas fa-star"></i>
+                            {% endfor %}
+                        </div>
+                        <p class="mb-0">{{ review.comment }}</p>
+                    </div>
+                    {% endfor %}
+                    {% if course.reviews|length > 3 %}
+                    <a href="#" class="btn btn-outline-primary btn-sm w-100">View All Reviews</a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endif %}
+
+            <!-- Add Review Form -->
+            {% if enrollment %}
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title mb-0">Add Review</h3>
+                </div>
+                <div class="card-body">
+                    <form action="{{ url_for('add_review', course_id=course.id) }}" method="POST">
+                        <div class="mb-3">
+                            <label class="form-label">Rating</label>
+                            <div class="rating">
+                                {% for i in range(5, 0, -1) %}
+                                <input type="radio" name="rating" value="{{ i }}" id="star{{ i }}" required>
+                                <label for="star{{ i }}"><i class="fas fa-star"></i></label>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="comment" class="form-label">Comment</label>
+                            <textarea class="form-control" id="comment" name="comment" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Submit Review</button>
+                    </form>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<style>
+.rating {
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: flex-end;
+}
+
+.rating input {
+    display: none;
+}
+
+.rating label {
+    cursor: pointer;
+    font-size: 1.5em;
+    color: #ddd;
+    padding: 0 0.1em;
+}
+
+.rating input:checked ~ label,
+.rating label:hover,
+.rating label:hover ~ label {
+    color: #ffd700;
+}
+</style>
+{% endblock %} 

@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}Create Course{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Create New Course</h2>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="title" class="form-label">Course Title</label>
+                        <input type="text" class="form-control" id="title" name="title" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Course Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="category" class="form-label">Category</label>
+                                <select class="form-select" id="category" name="category_id" required>
+                                    <option value="">Select Category</option>
+                                    {% for category in categories %}
+                                    <option value="{{ category.id }}">{{ category.name }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="difficulty" class="form-label">Difficulty Level</label>
+                                <select class="form-select" id="difficulty" name="difficulty" required>
+                                    <option value="Beginner">Beginner</option>
+                                    <option value="Intermediate">Intermediate</option>
+                                    <option value="Advanced">Advanced</option>
+                                    <option value="Expert">Expert</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="duration" class="form-label">Estimated Duration (hours)</label>
+                        <input type="number" class="form-control" id="duration" name="duration" min="1" required>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Tags</label>
+                        <div class="row">
+                            {% for tag in tags %}
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="tags" value="{{ tag.id }}" id="tag{{ tag.id }}">
+                                    <label class="form-check-label" for="tag{{ tag.id }}">
+                                        {{ tag.name }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Prerequisites</label>
+                        <div id="prerequisites-container">
+                            <div class="input-group mb-2">
+                                <input type="text" class="form-control" name="prerequisites" placeholder="Enter a prerequisite">
+                                <button type="button" class="btn btn-outline-secondary remove-prerequisite">Remove</button>
+                            </div>
+                        </div>
+                        <button type="button" class="btn btn-outline-primary btn-sm" id="add-prerequisite">
+                            Add Prerequisite
+                        </button>
+                    </div>
+
+                    <button type="submit" class="btn btn-primary">Create Course</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.getElementById('add-prerequisite').addEventListener('click', function() {
+    const container = document.getElementById('prerequisites-container');
+    const newPrereq = document.createElement('div');
+    newPrereq.className = 'input-group mb-2';
+    newPrereq.innerHTML = `
+        <input type="text" class="form-control" name="prerequisites" placeholder="Enter a prerequisite">
+        <button type="button" class="btn btn-outline-secondary remove-prerequisite">Remove</button>
+    `;
+    container.appendChild(newPrereq);
+});
+
+document.getElementById('prerequisites-container').addEventListener('click', function(e) {
+    if (e.target.classList.contains('remove-prerequisite')) {
+        const prerequisiteDiv = e.target.parentElement;
+        if (document.querySelectorAll('#prerequisites-container .input-group').length > 1) {
+            prerequisiteDiv.remove();
+        }
+    }
+});
+</script>
+{% endblock %} 

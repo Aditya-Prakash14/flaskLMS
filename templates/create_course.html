@@ -1,0 +1,684 @@
+{% extends "base.html" %}
+
+{% block title %}Create Course{% endblock %}
+
+{% block styles %}
+<style>
+    .form-section {
+        background: white;
+        border-radius: 16px;
+        padding: 2rem;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        color: #0d6efd;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid #e9ecef;
+    }
+    
+    .preview-section {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+    }
+    
+    .section-card {
+        background: white;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #e9ecef;
+    }
+    
+    .add-section-btn {
+        width: 100%;
+        border: 2px dashed #0d6efd;
+        background: rgba(13, 110, 253, 0.05);
+        color: #0d6efd;
+        padding: 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .add-section-btn:hover {
+        background: rgba(13, 110, 253, 0.1);
+    }
+    
+    .remove-section {
+        color: #dc3545;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .remove-section:hover {
+        color: #bb2d3b;
+    }
+    
+    .drag-handle {
+        cursor: move;
+        color: #6c757d;
+    }
+    
+    .file-upload {
+        position: relative;
+        overflow: hidden;
+        margin-top: 1rem;
+        width: 100%;
+    }
+    
+    .file-upload input[type=file] {
+        position: absolute;
+        font-size: 100px;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .upload-btn-wrapper {
+        position: relative;
+        overflow: hidden;
+        display: inline-block;
+    }
+    
+    .upload-btn {
+        border: 2px dashed #0d6efd;
+        color: #0d6efd;
+        background-color: rgba(13, 110, 253, 0.05);
+        padding: 1rem;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .upload-btn:hover {
+        background-color: rgba(13, 110, 253, 0.1);
+    }
+    
+    .upload-btn-wrapper input[type=file] {
+        font-size: 100px;
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        cursor: pointer;
+    }
+    
+    .pdf-preview {
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-top: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .pdf-icon {
+        color: #dc3545;
+        font-size: 2rem;
+        margin-right: 1rem;
+    }
+    
+    .test-question {
+        background: #f8f9fa;
+        border-radius: 8px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        border: 1px solid #dee2e6;
+    }
+    
+    .add-option-btn {
+        background: transparent;
+        border: 1px dashed #0d6efd;
+        color: #0d6efd;
+        width: 100%;
+        text-align: center;
+        padding: 0.5rem;
+        margin-top: 0.5rem;
+        border-radius: 4px;
+        transition: all 0.3s ease;
+    }
+    
+    .add-option-btn:hover {
+        background: rgba(13, 110, 253, 0.05);
+    }
+    
+    .correct-option {
+        color: #198754;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-12">
+            <h1 class="h3 mb-4">Create New Course</h1>
+            
+            <form method="POST" action="{{ url_for('create_course') }}" enctype="multipart/form-data">
+                {{ form.csrf_token }}
+                
+                <!-- Basic Information -->
+                <div class="form-section">
+                    <h2 class="section-title">Basic Information</h2>
+                    <div class="row g-3">
+                        <div class="col-md-12 mb-3">
+                            <label for="title" class="form-label">Course Title</label>
+                            <input type="text" class="form-control" id="title" name="title" required>
+                        </div>
+                        
+                        <div class="col-md-12 mb-3">
+                            <label for="description" class="form-label">Course Description</label>
+                            <textarea class="form-control" id="description" name="description" rows="4" required></textarea>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="category_id" class="form-label">Category</label>
+                            <select class="form-select" id="category_id" name="category_id" required>
+                                <option value="" selected disabled>Select a category</option>
+                                {% for category in categories %}
+                                <option value="{{ category.id }}">{{ category.name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="difficulty_level" class="form-label">Difficulty Level</label>
+                            <select class="form-select" id="difficulty_level" name="difficulty_level" required>
+                                <option value="" selected disabled>Select difficulty</option>
+                                <option value="Beginner">Beginner</option>
+                                <option value="Intermediate">Intermediate</option>
+                                <option value="Advanced">Advanced</option>
+                            </select>
+                        </div>
+                        
+                        <div class="col-md-12 mb-3">
+                            <label for="tags" class="form-label">Tags (comma separated)</label>
+                            <input type="text" class="form-control" id="tags" name="tags" placeholder="e.g., python, programming, web development">
+                        </div>
+                        
+                        <div class="col-md-12 mb-3">
+                            <label class="form-label">Course Image</label>
+                            <div class="upload-btn-wrapper w-100">
+                                <div class="upload-btn">
+                                    <i class="fas fa-cloud-upload-alt me-2"></i>
+                                    <span id="image-label">Upload Course Image</span>
+                                </div>
+                                <input type="file" name="image" id="image" accept="image/*">
+                            </div>
+                            <div id="image-preview" class="mt-3 d-none">
+                                <img src="" alt="Preview" class="img-fluid rounded" style="max-height: 200px;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Course Content -->
+                <div class="form-section">
+                    <h2 class="section-title">Course Content</h2>
+                    <div id="sections-container">
+                        <!-- Sections will be added here dynamically -->
+                    </div>
+                    
+                    <button type="button" id="add-section" class="add-section-btn mt-3">
+                        <i class="fas fa-plus me-2"></i> Add Section
+                    </button>
+                </div>
+                
+                <!-- Tests & Assessments -->
+                <div class="form-section">
+                    <h2 class="section-title">Tests & Assessments</h2>
+                    <div id="tests-container">
+                        <!-- Tests will be added here dynamically -->
+                    </div>
+                    
+                    <button type="button" id="add-test" class="add-section-btn mt-3">
+                        <i class="fas fa-plus me-2"></i> Add Test
+                    </button>
+                </div>
+                
+                <!-- PDF Resources -->
+                <div class="form-section">
+                    <h2 class="section-title">PDF Resources</h2>
+                    <div id="pdf-resources-container">
+                        <!-- PDF resources will be added here dynamically -->
+                    </div>
+                    
+                    <button type="button" id="add-pdf-resource" class="add-section-btn mt-3">
+                        <i class="fas fa-plus me-2"></i> Add PDF Resource
+                    </button>
+                </div>
+                
+                <!-- Course Settings -->
+                <div class="form-section">
+                    <h2 class="section-title">Course Settings</h2>
+                    <div class="row g-3">
+                        <div class="col-md-6 mb-3">
+                            <label for="estimated_duration" class="form-label">Estimated Duration (hours)</label>
+                            <input type="number" class="form-control" id="estimated_duration" name="estimated_duration" min="1" step="0.5">
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <div class="form-check form-switch pt-4">
+                                <input class="form-check-input" type="checkbox" id="is_published" name="is_published">
+                                <label class="form-check-label" for="is_published">Publish course immediately</label>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-12">
+                            <label for="prerequisites" class="form-label">Prerequisites (courses)</label>
+                            <select class="form-select" id="prerequisites" name="prerequisites" multiple>
+                                {% for course in courses %}
+                                <option value="{{ course.id }}">{{ course.title }}</option>
+                                {% endfor %}
+                            </select>
+                            <small class="text-muted">Hold Ctrl (or Cmd) to select multiple courses</small>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                    <button type="button" class="btn btn-outline-secondary me-md-2" onclick="window.history.back()">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create Course</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Section template
+        function createSectionTemplate(index) {
+            return `
+                <div class="section-card" data-section-index="${index}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <span class="drag-handle me-2"><i class="fas fa-grip-vertical"></i></span>
+                            <h5 class="mb-0">Section ${index + 1}</h5>
+                        </div>
+                        <span class="remove-section" onclick="removeSection(${index})"><i class="fas fa-times"></i></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Section Title</label>
+                        <input type="text" class="form-control" name="sections[${index}][title]" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Content Type</label>
+                        <select class="form-select content-type-select" name="sections[${index}][type]" onchange="updateContentFields(${index}, this.value)">
+                            <option value="text">Text</option>
+                            <option value="video">Video</option>
+                            <option value="link">External Link</option>
+                        </select>
+                    </div>
+                    <div class="content-fields" id="content-fields-${index}">
+                        <div class="mb-3 text-field">
+                            <label class="form-label">Content</label>
+                            <textarea class="form-control" name="sections[${index}][content]" rows="4"></textarea>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Test template
+        function createTestTemplate(index) {
+            return `
+                <div class="section-card" data-test-index="${index}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0">Test ${index + 1}</h5>
+                        </div>
+                        <span class="remove-section" onclick="removeTest(${index})"><i class="fas fa-times"></i></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Test Title</label>
+                        <input type="text" class="form-control" name="tests[${index}][title]" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="tests[${index}][description]" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Passing Score (%)</label>
+                        <input type="number" class="form-control" name="tests[${index}][passing_score]" min="0" max="100" value="70">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Time Limit (minutes, 0 for no limit)</label>
+                        <input type="number" class="form-control" name="tests[${index}][time_limit]" min="0" value="0">
+                    </div>
+                    
+                    <div class="mt-4 mb-2 d-flex justify-content-between align-items-center">
+                        <h6>Questions</h6>
+                        <button type="button" class="btn btn-sm btn-outline-primary" onclick="addQuestion(${index})">
+                            <i class="fas fa-plus me-1"></i> Add Question
+                        </button>
+                    </div>
+                    
+                    <div class="questions-container" id="test-${index}-questions">
+                        <!-- Questions will be added here -->
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Question template
+        function createQuestionTemplate(testIndex, questionIndex) {
+            return `
+                <div class="test-question" data-question-index="${questionIndex}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0">Question ${questionIndex + 1}</h6>
+                        <span class="remove-section" onclick="removeQuestion(${testIndex}, ${questionIndex})"><i class="fas fa-times"></i></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Question Text</label>
+                        <textarea class="form-control" name="tests[${testIndex}][questions][${questionIndex}][text]" rows="2" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Question Type</label>
+                        <select class="form-select" name="tests[${testIndex}][questions][${questionIndex}][type]" onchange="updateQuestionType(${testIndex}, ${questionIndex}, this.value)">
+                            <option value="multiple_choice">Multiple Choice</option>
+                            <option value="true_false">True/False</option>
+                            <option value="short_answer">Short Answer</option>
+                        </select>
+                    </div>
+                    
+                    <div class="options-container" id="test-${testIndex}-question-${questionIndex}-options">
+                        <div class="mb-3">
+                            <label class="form-label">Options</label>
+                            <div class="option" data-option-index="0">
+                                <div class="input-group mb-2">
+                                    <div class="input-group-text">
+                                        <input type="radio" name="tests[${testIndex}][questions][${questionIndex}][correct_option]" value="0" checked>
+                                    </div>
+                                    <input type="text" class="form-control" name="tests[${testIndex}][questions][${questionIndex}][options][0]" placeholder="Option 1" required>
+                                    <button type="button" class="btn btn-outline-danger" onclick="removeOption(${testIndex}, ${questionIndex}, 0)">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="option" data-option-index="1">
+                                <div class="input-group mb-2">
+                                    <div class="input-group-text">
+                                        <input type="radio" name="tests[${testIndex}][questions][${questionIndex}][correct_option]" value="1">
+                                    </div>
+                                    <input type="text" class="form-control" name="tests[${testIndex}][questions][${questionIndex}][options][1]" placeholder="Option 2" required>
+                                    <button type="button" class="btn btn-outline-danger" onclick="removeOption(${testIndex}, ${questionIndex}, 1)">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <button type="button" class="add-option-btn" onclick="addOption(${testIndex}, ${questionIndex})">
+                            <i class="fas fa-plus me-1"></i> Add Option
+                        </button>
+                    </div>
+                    
+                    <div class="short-answer-container d-none" id="test-${testIndex}-question-${questionIndex}-short-answer">
+                        <div class="mb-3">
+                            <label class="form-label">Correct Answer</label>
+                            <input type="text" class="form-control" name="tests[${testIndex}][questions][${questionIndex}][correct_answer]" placeholder="Enter the correct answer">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // PDF resource template
+        function createPdfResourceTemplate(index) {
+            return `
+                <div class="section-card" data-pdf-index="${index}">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div class="d-flex align-items-center">
+                            <h5 class="mb-0">PDF Resource ${index + 1}</h5>
+                        </div>
+                        <span class="remove-section" onclick="removePdfResource(${index})"><i class="fas fa-times"></i></span>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Title</label>
+                        <input type="text" class="form-control" name="pdf_resources[${index}][title]" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" name="pdf_resources[${index}][description]" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">PDF File</label>
+                        <div class="upload-btn-wrapper w-100">
+                            <div class="upload-btn">
+                                <i class="fas fa-file-pdf me-2"></i>
+                                <span id="pdf-label-${index}">Upload PDF</span>
+                            </div>
+                            <input type="file" name="pdf_resources[${index}][file]" id="pdf-file-${index}" accept="application/pdf" onchange="updatePdfLabel(${index})">
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        // Add section
+        const sectionsContainer = document.getElementById('sections-container');
+        const addSectionBtn = document.getElementById('add-section');
+        let sectionCount = 0;
+        
+        addSectionBtn.addEventListener('click', function() {
+            sectionsContainer.insertAdjacentHTML('beforeend', createSectionTemplate(sectionCount));
+            sectionCount++;
+        });
+        
+        // Add first section by default
+        addSectionBtn.click();
+        
+        // Add test
+        const testsContainer = document.getElementById('tests-container');
+        const addTestBtn = document.getElementById('add-test');
+        let testCount = 0;
+        
+        addTestBtn.addEventListener('click', function() {
+            testsContainer.insertAdjacentHTML('beforeend', createTestTemplate(testCount));
+            testCount++;
+        });
+        
+        // Add PDF resource
+        const pdfResourcesContainer = document.getElementById('pdf-resources-container');
+        const addPdfResourceBtn = document.getElementById('add-pdf-resource');
+        let pdfResourceCount = 0;
+        
+        addPdfResourceBtn.addEventListener('click', function() {
+            pdfResourcesContainer.insertAdjacentHTML('beforeend', createPdfResourceTemplate(pdfResourceCount));
+            pdfResourceCount++;
+        });
+        
+        // Image preview
+        const imageInput = document.getElementById('image');
+        const imagePreview = document.getElementById('image-preview');
+        const imageLabel = document.getElementById('image-label');
+        
+        imageInput.addEventListener('change', function() {
+            if (this.files && this.files[0]) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    imagePreview.classList.remove('d-none');
+                    imagePreview.querySelector('img').src = e.target.result;
+                    imageLabel.textContent = imageInput.files[0].name;
+                };
+                reader.readAsDataURL(this.files[0]);
+            }
+        });
+        
+        // Make functions available globally
+        window.removeSection = function(index) {
+            const section = document.querySelector(`[data-section-index="${index}"]`);
+            if (section) {
+                section.remove();
+            }
+        };
+        
+        window.removeTest = function(index) {
+            const test = document.querySelector(`[data-test-index="${index}"]`);
+            if (test) {
+                test.remove();
+            }
+        };
+        
+        window.removePdfResource = function(index) {
+            const resource = document.querySelector(`[data-pdf-index="${index}"]`);
+            if (resource) {
+                resource.remove();
+            }
+        };
+        
+        window.updateContentFields = function(index, type) {
+            const contentFields = document.getElementById(`content-fields-${index}`);
+            let template = '';
+            
+            switch (type) {
+                case 'text':
+                    template = `
+                        <div class="mb-3 text-field">
+                            <label class="form-label">Content</label>
+                            <textarea class="form-control" name="sections[${index}][content]" rows="4"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'video':
+                    template = `
+                        <div class="mb-3 video-field">
+                            <label class="form-label">Video URL (YouTube, Vimeo, etc.)</label>
+                            <input type="text" class="form-control" name="sections[${index}][video_url]" placeholder="e.g., https://www.youtube.com/watch?v=...">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Video Description</label>
+                            <textarea class="form-control" name="sections[${index}][content]" rows="3"></textarea>
+                        </div>
+                    `;
+                    break;
+                case 'link':
+                    template = `
+                        <div class="mb-3 link-field">
+                            <label class="form-label">External URL</label>
+                            <input type="text" class="form-control" name="sections[${index}][external_url]" placeholder="e.g., https://example.com/resource">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Description</label>
+                            <textarea class="form-control" name="sections[${index}][content]" rows="3"></textarea>
+                        </div>
+                    `;
+                    break;
+            }
+            
+            contentFields.innerHTML = template;
+        };
+        
+        window.addQuestion = function(testIndex) {
+            const questionsContainer = document.getElementById(`test-${testIndex}-questions`);
+            const questionCount = questionsContainer.querySelectorAll('.test-question').length;
+            questionsContainer.insertAdjacentHTML('beforeend', createQuestionTemplate(testIndex, questionCount));
+        };
+        
+        window.removeQuestion = function(testIndex, questionIndex) {
+            const question = document.querySelector(`#test-${testIndex}-questions .test-question[data-question-index="${questionIndex}"]`);
+            if (question) {
+                question.remove();
+            }
+        };
+        
+        window.addOption = function(testIndex, questionIndex) {
+            const optionsContainer = document.getElementById(`test-${testIndex}-question-${questionIndex}-options`);
+            const optionCount = optionsContainer.querySelectorAll('.option').length;
+            
+            const optionTemplate = `
+                <div class="option" data-option-index="${optionCount}">
+                    <div class="input-group mb-2">
+                        <div class="input-group-text">
+                            <input type="radio" name="tests[${testIndex}][questions][${questionIndex}][correct_option]" value="${optionCount}">
+                        </div>
+                        <input type="text" class="form-control" name="tests[${testIndex}][questions][${questionIndex}][options][${optionCount}]" placeholder="Option ${optionCount + 1}" required>
+                        <button type="button" class="btn btn-outline-danger" onclick="removeOption(${testIndex}, ${questionIndex}, ${optionCount})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            const addOptionBtn = optionsContainer.querySelector('.add-option-btn');
+            addOptionBtn.insertAdjacentHTML('beforebegin', optionTemplate);
+        };
+        
+        window.removeOption = function(testIndex, questionIndex, optionIndex) {
+            const optionsContainer = document.getElementById(`test-${testIndex}-question-${questionIndex}-options`);
+            const options = optionsContainer.querySelectorAll('.option');
+            
+            if (options.length <= 2) {
+                alert('A question must have at least 2 options.');
+                return;
+            }
+            
+            const option = optionsContainer.querySelector(`.option[data-option-index="${optionIndex}"]`);
+            if (option) {
+                option.remove();
+            }
+        };
+        
+        window.updateQuestionType = function(testIndex, questionIndex, type) {
+            const optionsContainer = document.getElementById(`test-${testIndex}-question-${questionIndex}-options`);
+            const shortAnswerContainer = document.getElementById(`test-${testIndex}-question-${questionIndex}-short-answer`);
+            
+            if (type === 'short_answer') {
+                optionsContainer.classList.add('d-none');
+                shortAnswerContainer.classList.remove('d-none');
+            } else if (type === 'true_false') {
+                optionsContainer.classList.remove('d-none');
+                shortAnswerContainer.classList.add('d-none');
+                
+                // Set options to True/False
+                const options = optionsContainer.querySelectorAll('.option');
+                if (options.length > 0) {
+                    const inputs = options[0].querySelectorAll('input[type="text"]');
+                    if (inputs.length > 0) {
+                        inputs[0].value = 'True';
+                    }
+                }
+                
+                if (options.length > 1) {
+                    const inputs = options[1].querySelectorAll('input[type="text"]');
+                    if (inputs.length > 0) {
+                        inputs[0].value = 'False';
+                    }
+                }
+                
+                // Remove any additional options
+                for (let i = 2; i < options.length; i++) {
+                    options[i].remove();
+                }
+            } else {
+                optionsContainer.classList.remove('d-none');
+                shortAnswerContainer.classList.add('d-none');
+            }
+        };
+        
+        window.updatePdfLabel = function(index) {
+            const pdfInput = document.getElementById(`pdf-file-${index}`);
+            const pdfLabel = document.getElementById(`pdf-label-${index}`);
+            
+            if (pdfInput.files && pdfInput.files[0]) {
+                pdfLabel.textContent = pdfInput.files[0].name;
+            }
+        };
+    });
+</script>
+{% endblock %} 

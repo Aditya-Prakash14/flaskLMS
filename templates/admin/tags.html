@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Tags{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title">Add New Tag</h2>
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Tag Name</label>
+                        <input type="text" class="form-control" id="name" name="name" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Add Tag</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title">Existing Tags</h2>
+                <div class="d-flex flex-wrap gap-2">
+                    {% for tag in tags %}
+                    <div class="badge bg-info p-2">
+                        {{ tag.name }}
+                        <span class="badge bg-light text-dark ms-1">
+                            {{ tag.courses|length }}
+                        </span>
+                    </div>
+                    {% else %}
+                    <p>No tags available.</p>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

@@ -1,0 +1,202 @@
+{% extends "base.html" %}
+
+{% block title %}Create Quiz - {{ course.title }}{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">Create Quiz for {{ course.title }}</h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST" id="quizForm">
+                        <!-- Quiz Details -->
+                        <div class="mb-4">
+                            <h5>Quiz Details</h5>
+                            <div class="mb-3">
+                                <label for="title" class="form-label">Quiz Title</label>
+                                <input type="text" class="form-control" id="title" name="title" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="description" class="form-label">Description</label>
+                                <textarea class="form-control" id="description" name="description" rows="3"></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="time_limit" class="form-label">Time Limit (minutes)</label>
+                                        <input type="number" class="form-control" id="time_limit" name="time_limit" min="0" value="0">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label for="passing_score" class="form-label">Passing Score (%)</label>
+                                        <input type="number" class="form-control" id="passing_score" name="passing_score" min="0" max="100" value="70">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Questions -->
+                        <div id="questionsContainer">
+                            <h5>Questions</h5>
+                            <div class="question-container mb-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="mb-3">
+                                            <label class="form-label">Question Type</label>
+                                            <select class="form-select question-type" name="question_type_0" required>
+                                                <option value="multiple_choice">Multiple Choice</option>
+                                                <option value="true_false">True/False</option>
+                                            </select>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Question Text</label>
+                                            <textarea class="form-control" name="question_0" required></textarea>
+                                        </div>
+                                        <div class="mb-3">
+                                            <label class="form-label">Points</label>
+                                            <input type="number" class="form-control" name="points_0" value="1" min="1">
+                                        </div>
+                                        <div class="options-container">
+                                            <div class="option-container mb-2">
+                                                <div class="input-group">
+                                                    <div class="input-group-text">
+                                                        <input type="radio" name="correct_0_0" required>
+                                                    </div>
+                                                    <input type="text" class="form-control" name="option_0_0" placeholder="Option 1" required>
+                                                    <button type="button" class="btn btn-danger remove-option">Remove</button>
+                                                </div>
+                                            </div>
+                                            <div class="option-container mb-2">
+                                                <div class="input-group">
+                                                    <div class="input-group-text">
+                                                        <input type="radio" name="correct_0_1" required>
+                                                    </div>
+                                                    <input type="text" class="form-control" name="option_0_1" placeholder="Option 2" required>
+                                                    <button type="button" class="btn btn-danger remove-option">Remove</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <button type="button" class="btn btn-secondary add-option">Add Option</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <button type="button" class="btn btn-secondary mb-4" id="addQuestion">Add Question</button>
+                        <button type="submit" class="btn btn-primary">Create Quiz</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block scripts %}
+<script>
+let questionCount = 1;
+
+document.getElementById('addQuestion').addEventListener('click', function() {
+    const container = document.getElementById('questionsContainer');
+    const questionDiv = document.createElement('div');
+    questionDiv.className = 'question-container mb-4';
+    questionDiv.innerHTML = `
+        <div class="card">
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">Question Type</label>
+                    <select class="form-select question-type" name="question_type_${questionCount}" required>
+                        <option value="multiple_choice">Multiple Choice</option>
+                        <option value="true_false">True/False</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Question Text</label>
+                    <textarea class="form-control" name="question_${questionCount}" required></textarea>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label">Points</label>
+                    <input type="number" class="form-control" name="points_${questionCount}" value="1" min="1">
+                </div>
+                <div class="options-container">
+                    <div class="option-container mb-2">
+                        <div class="input-group">
+                            <div class="input-group-text">
+                                <input type="radio" name="correct_${questionCount}_0" required>
+                            </div>
+                            <input type="text" class="form-control" name="option_${questionCount}_0" placeholder="Option 1" required>
+                            <button type="button" class="btn btn-danger remove-option">Remove</button>
+                        </div>
+                    </div>
+                    <div class="option-container mb-2">
+                        <div class="input-group">
+                            <div class="input-group-text">
+                                <input type="radio" name="correct_${questionCount}_1" required>
+                            </div>
+                            <input type="text" class="form-control" name="option_${questionCount}_1" placeholder="Option 2" required>
+                            <button type="button" class="btn btn-danger remove-option">Remove</button>
+                        </div>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-secondary add-option">Add Option</button>
+            </div>
+        </div>
+    `;
+    container.appendChild(questionDiv);
+    questionCount++;
+});
+
+document.addEventListener('click', function(e) {
+    if (e.target.classList.contains('add-option')) {
+        const questionContainer = e.target.closest('.question-container');
+        const optionsContainer = questionContainer.querySelector('.options-container');
+        const questionIndex = Array.from(document.querySelectorAll('.question-container')).indexOf(questionContainer);
+        const optionCount = optionsContainer.children.length;
+        
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'option-container mb-2';
+        optionDiv.innerHTML = `
+            <div class="input-group">
+                <div class="input-group-text">
+                    <input type="radio" name="correct_${questionIndex}_${optionCount}" required>
+                </div>
+                <input type="text" class="form-control" name="option_${questionIndex}_${optionCount}" placeholder="Option ${optionCount + 1}" required>
+                <button type="button" class="btn btn-danger remove-option">Remove</button>
+            </div>
+        `;
+        optionsContainer.appendChild(optionDiv);
+    }
+    
+    if (e.target.classList.contains('remove-option')) {
+        const optionContainer = e.target.closest('.option-container');
+        optionContainer.remove();
+    }
+});
+
+document.getElementById('quizForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // Add question count to form
+    const questionCountInput = document.createElement('input');
+    questionCountInput.type = 'hidden';
+    questionCountInput.name = 'question_count';
+    questionCountInput.value = questionCount;
+    this.appendChild(questionCountInput);
+    
+    // Add option counts to form
+    document.querySelectorAll('.question-container').forEach((container, index) => {
+        const optionCountInput = document.createElement('input');
+        optionCountInput.type = 'hidden';
+        optionCountInput.name = `option_count_${index}`;
+        optionCountInput.value = container.querySelectorAll('.option-container').length;
+        this.appendChild(optionCountInput);
+    });
+    
+    this.submit();
+});
+</script>
+{% endblock %}
+{% endblock %} 

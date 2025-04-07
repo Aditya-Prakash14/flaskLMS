@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block title %}Test Results - {{ test.title }}{% endblock %}
+
+{% block styles %}
+<style>
+    .results-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .results-header {
+        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+        color: white;
+        padding: 2rem 0;
+        margin-bottom: 2rem;
+    }
+    
+    .results-summary {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 2rem;
+        border: 1px solid rgba(0,0,0,0.05);
+    }
+    
+    .summary-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+    
+    .summary-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 1rem;
+        color: white;
+        font-size: 1.25rem;
+    }
+    
+    .icon-score {
+        background: linear-gradient(135deg, #0d6efd, #0dcaf0);
+    }
+    
+    .icon-pass {
+        background: linear-gradient(135deg, #198754, #20c997);
+    }
+    
+    .icon-fail {
+        background: linear-gradient(135deg, #dc3545, #fd7e14);
+    }
+    
+    .icon-time {
+        background: linear-gradient(135deg, #6f42c1, #0dcaf0);
+    }
+    
+    .summary-label {
+        font-size: 0.9rem;
+        color: #6c757d;
+        margin-bottom: 0.25rem;
+    }
+    
+    .summary-value {
+        font-weight: 600;
+        font-size: 1.1rem;
+    }
+    
+    .question-card {
+        background: white;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        margin-bottom: 1.5rem;
+        border: 1px solid rgba(0,0,0,0.05);
+        transition: all 0.3s ease;
+    }
+    
+    .question-card:hover {
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    }
+    
+    .question-number {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        background: #f8f9fa;
+        color: #0d6efd;
+        border-radius: 50%;
+        margin-right: 0.75rem;
+        font-weight: 600;
+    }
+    
+    .question-result {
+        margin-right: 0.75rem;
+    }
+    
+    .question-result i {
+        font-size: 1.25rem;
+    }
+    
+    .correct-icon {
+        color: #198754;
+    }
+    
+    .incorrect-icon {
+        color: #dc3545;
+    }
+    
+    .option {
+        padding: 1rem;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        margin-bottom: 0.75rem;
+        position: relative;
+    }
+    
+    .option-correct {
+        background-color: rgba(25, 135, 84, 0.1);
+        border-color: #198754;
+    }
+    
+    .option-incorrect {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-color: #dc3545;
+    }
+    
+    .option-badge {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+    }
+    
+    .results-navigation {
+        position: sticky;
+        bottom: 0;
+        background: white;
+        padding: 1rem 0;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+        z-index: 1000;
+        margin-top: 2rem;
+    }
+    
+    .progress-circle {
+        width: 150px;
+        height: 150px;
+        position: relative;
+        margin: 0 auto 1.5rem;
+    }
+    
+    .progress-circle-bg {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        position: absolute;
+        background: #e9ecef;
+    }
+    
+    .progress-circle-fill {
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        background: conic-gradient(#0d6efd 0%, #e9ecef 0%);
+        position: absolute;
+        transition: background 1s ease;
+    }
+    
+    .progress-circle-inner {
+        position: absolute;
+        width: 130px;
+        height: 130px;
+        border-radius: 50%;
+        background: white;
+        top: 10px;
+        left: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+    }
+    
+    .progress-value {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #0d6efd;
+        line-height: 1;
+    }
+    
+    .progress-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+    }
+    
+    .answer-feedback {
+        margin-top: 1rem;
+        padding: 1rem;
+        border-radius: 8px;
+    }
+    
+    .feedback-correct {
+        background-color: rgba(25, 135, 84, 0.1);
+        border-left: 4px solid #198754;
+    }
+    
+    .feedback-incorrect {
+        background-color: rgba(220, 53, 69, 0.1);
+        border-left: 4px solid #dc3545;
+    }
+    
+    .score-badge-large {
+        font-size: 1.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+    }
+    
+    .result-status {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+    
+    .result-status.passed {
+        color: #198754;
+    }
+    
+    .result-status.failed {
+        color: #dc3545;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="results-header">
+    <div class="container">
+        <div class="row">
+            <div class="col-12">
+                <nav aria-label="breadcrumb">
+                    <ol class="breadcrumb mb-2">
+                        <li class="breadcrumb-item"><a href="{{ url_for('index') }}" class="text-white opacity-75">Home</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('course_detail', course_id=course.id) }}" class="text-white opacity-75">{{ course.title }}</a></li>
+                        <li class="breadcrumb-item"><a href="{{ url_for('course_tests', course_id=course.id) }}" class="text-white opacity-75">Tests</a></li>
+                        <li class="breadcrumb-item active text-white" aria-current="page">Results</li>
+                    </ol>
+                </nav>
+                <h1 class="h3 mb-0">{{ test.title }} - Results</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container py-4">
+    <div class="results-container">
+        <div class="results-summary">
+            <div class="row align-items-center">
+                <div class="col-md-4">
+                    <div class="progress-circle">
+                        <div class="progress-circle-bg"></div>
+                        <div class="progress-circle-fill" id="progress-circle-fill"></div>
+                        <div class="progress-circle-inner">
+                            <div class="progress-value">{{ "%.1f"|format(attempt.score) }}%</div>
+                            <div class="progress-label">Your Score</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    <div class="result-status {{ 'passed' if attempt.passed else 'failed' }}">
+                        {% if attempt.passed %}
+                            <i class="fas fa-check-circle me-2"></i> You passed the test!
+                        {% else %}
+                            <i class="fas fa-times-circle me-2"></i> You failed the test
+                        {% endif %}
+                    </div>
+                    <p class="mb-4">
+                        {% if attempt.passed %}
+                            Congratulations! You scored above the required passing score of {{ test.passing_score }}%.
+                        {% else %}
+                            Your score is below the required passing score of {{ test.passing_score }}%. You can review your answers below and try again.
+                        {% endif %}
+                    </p>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="summary-item">
+                                <div class="summary-icon icon-score">
+                                    <i class="fas fa-percentage"></i>
+                                </div>
+                                <div>
+                                    <div class="summary-label">Score</div>
+                                    <div class="summary-value">{{ "%.1f"|format(attempt.score) }}%</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="summary-item">
+                                <div class="summary-icon {{ 'icon-pass' if attempt.passed else 'icon-fail' }}">
+                                    <i class="fas {{ 'fa-check' if attempt.passed else 'fa-times' }}"></i>
+                                </div>
+                                <div>
+                                    <div class="summary-label">Status</div>
+                                    <div class="summary-value">{{ 'Passed' if attempt.passed else 'Failed' }}</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="summary-item">
+                                <div class="summary-icon icon-time">
+                                    <i class="fas fa-hourglass-half"></i>
+                                </div>
+                                <div>
+                                    <div class="summary-label">Time Taken</div>
+                                    <div class="summary-value">
+                                        {% if attempt.duration %}
+                                            {% set minutes = (attempt.duration / 60)|int %}
+                                            {% set seconds = attempt.duration % 60 %}
+                                            {{ minutes }} min {{ seconds }} sec
+                                        {% else %}
+                                            Not recorded
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="summary-item">
+                                <div class="summary-icon icon-score">
+                                    <i class="fas fa-calendar-alt"></i>
+                                </div>
+                                <div>
+                                    <div class="summary-label">Completed On</div>
+                                    <div class="summary-value">{{ attempt.completed_at.strftime('%B %d, %Y') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="h5 mb-3">Question Review</h2>
+        
+        {% for question in questions %}
+            {% set answer = answer_map.get(question.id) %}
+            {% set is_correct = answer and answer.is_correct %}
+            
+            <div class="question-card">
+                <div class="d-flex align-items-center mb-3">
+                    <span class="question-number">{{ loop.index }}</span>
+                    <span class="question-result">
+                        {% if is_correct %}
+                            <i class="fas fa-check-circle correct-icon"></i>
+                        {% else %}
+                            <i class="fas fa-times-circle incorrect-icon"></i>
+                        {% endif %}
+                    </span>
+                    <h3 class="h5 mb-0">{{ question.text }}</h3>
+                </div>
+                
+                {% if question.type == 'multiple_choice' or question.type == 'true_false' %}
+                    {% for option in question.options %}
+                        {% set is_selected = answer and answer.selected_option == loop.index0 %}
+                        {% set is_correct_option = question.correct_option == loop.index0 %}
+                        
+                        <div class="option 
+                            {{ 'option-correct' if is_correct_option else 'option-incorrect' if is_selected and not is_correct_option }}">
+                            {{ option.text }}
+                            
+                            {% if is_correct_option %}
+                                <span class="option-badge badge bg-success">
+                                    <i class="fas fa-check"></i> Correct Answer
+                                </span>
+                            {% elif is_selected and not is_correct_option %}
+                                <span class="option-badge badge bg-danger">
+                                    <i class="fas fa-times"></i> Your Answer
+                                </span>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                {% elif question.type == 'short_answer' %}
+                    <div class="mb-3">
+                        <label class="form-label">Your Answer</label>
+                        <input type="text" class="form-control" value="{{ answer.text_answer }}" readonly>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Correct Answer</label>
+                        <input type="text" class="form-control" value="{{ question.correct_answer }}" readonly>
+                    </div>
+                {% endif %}
+                
+                <div class="answer-feedback {{ 'feedback-correct' if is_correct else 'feedback-incorrect' }}">
+                    {% if is_correct %}
+                        <div class="fw-bold text-success"><i class="fas fa-check-circle me-2"></i> Correct!</div>
+                        <p class="mb-0">
+                            {{ "You answered this question correctly." }}
+                        </p>
+                    {% else %}
+                        <div class="fw-bold text-danger"><i class="fas fa-times-circle me-2"></i> Incorrect</div>
+                        <p class="mb-0">
+                            {% if question.type == 'multiple_choice' or question.type == 'true_false' %}
+                                {% if answer %}
+                                    The correct answer is: {{ question.options[question.correct_option].text }}
+                                {% else %}
+                                    You did not answer this question.
+                                {% endif %}
+                            {% elif question.type == 'short_answer' %}
+                                The correct answer is: {{ question.correct_answer }}
+                            {% endif %}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        {% endfor %}
+        
+        <div class="results-navigation">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('course_tests', course_id=course.id) }}" class="btn btn-outline-secondary">
+                        <i class="fas fa-arrow-left me-1"></i> Back to Tests
+                    </a>
+                    <a href="{{ url_for('take_test', test_id=test.id) }}" class="btn btn-primary">
+                        <i class="fas fa-redo me-1"></i> Retake Test
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Set up progress circle
+        const score = {{ attempt.score }};
+        const progressCircle = document.getElementById('progress-circle-fill');
+        
+        progressCircle.style.background = `conic-gradient(
+            {{ '#198754' if attempt.passed else '#dc3545' }} ${score}%, 
+            #e9ecef 0%
+        )`;
+    });
+</script>
+{% endblock %} 
